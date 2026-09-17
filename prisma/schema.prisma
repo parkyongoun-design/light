@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Postgres supports native enums, but these fields were originally modeled
+// for SQLite (no enum support there) and kept as strings for portability.
+// constrained at the application layer to the sets noted in comments.
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int      @default(0)
+  zones     Zone[]
+  createdAt DateTime @default(now())
+}
+
+model Zone {
+  id        String   @id @default(cuid())
+  name      String
+  order     Int      @default(0)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  members   Member[]
+  createdAt DateTime @default(now())
+}
+
+model Member {
+  id           String   @id @default(cuid())
+  name         String
+  pinHash      String
+  role         String   @default("MEMBER") // "ADMIN" | "MEMBER"
+  isZoneLeader Boolean  @default(false)
+  zone         Zone?    @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  zoneId       String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  completions MissionCompletion[]
+  pulls       GachaPull[]
+
+  @@index([zoneId])
+}
+
+model Mission {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  difficulty  String   @default("EASY") // "EASY" | "MEDIUM" | "HARD"
+  points      Int      @default(10)
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  completions MissionCompletion[]
+}
+
+model MissionCompletion {
+  id          String   @id @default(cuid())
+  member      Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId    String
+  mission     Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId   String
+  completedAt DateTime @default(now())
+
+  @@unique([memberId, missionId])
+}
+
+model GachaItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String   @default("")
+  rarity      String   @default("COMMON") // "COMMON" | "RARE" | "EPIC" | "LEGENDARY"
+  weight      Int      @default(50)
+  emoji       String   @default("🎁")
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  pulls GachaPull[]
+}
+
+model GachaPull {
+  id       String    @id @default(cuid())
+  member   Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId String
+  item     GachaItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  itemId   String
+  pulledAt DateTime  @default(now())
+
+  @@index([memberId])
+}
+
+model Settings {
+  id              String    @id @default("singleton")
+  pointsPerTicket Int       @default(100)
+  showZoneRanking Boolean   @default(false)
+  missionDeadline DateTime?
+}

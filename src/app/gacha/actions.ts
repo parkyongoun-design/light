@@ -3,21 +3,33 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireMember } from "@/lib/auth";
-import { getMemberTicketSummary } from "@/lib/tickets";
+import { getZoneTicketSummary } from "@/lib/tickets";
 import { weightedPick } from "@/lib/gacha";
 
 export type PullState = {
   error?: string;
-  result?: { id: string; name: string; rarity: string; emoji: string; description: string };
+  result?: {
+    id: string;
+    shareId: string;
+    name: string;
+    rarity: string;
+    emoji: string;
+    description: string;
+    linkUrl: string;
+  };
 };
 
 export async function pullGachaAction(_prev: PullState | undefined): Promise<PullState> {
   const member = await requireMember();
+  const isAdmin = member.role === "ADMIN";
 
-  if (member.role !== "ADMIN") {
-    const summary = await getMemberTicketSummary(member.id);
+  if (!isAdmin) {
+    if (!member.isZoneLeader || !member.zoneId) {
+      return { error: "뽑기는 구역장만 할 수 있어요. 구역장에게 부탁해보세요!" };
+    }
+    const summary = await getZoneTicketSummary(member.zoneId);
     if (summary.ticketsAvailable < 1) {
-      return { error: "보유한 뽑기권이 없습니다. 미션을 더 완료해주세요!" };
+      return { error: "구역 뽑기권이 없습니다. 구역 점수를 더 모아주세요!" };
     }
   }
 
@@ -27,8 +39,9 @@ export async function pullGachaAction(_prev: PullState | undefined): Promise<Pul
   }
 
   const picked = weightedPick(items);
-
-  await prisma.gachaPull.create({ data: { memberId: member.id, itemId: picked.id } });
+  const pull = await prisma.gachaPull.create({
+    data: { memberId: member.id, zoneId: isAdmin ? null : member.zoneId, itemId: picked.id },
+  });
 
   revalidatePath("/gacha");
   revalidatePath("/zone");
@@ -36,10 +49,12 @@ export async function pullGachaAction(_prev: PullState | undefined): Promise<Pul
   return {
     result: {
       id: picked.id,
+      shareId: pull.shareId,
       name: picked.name,
       rarity: picked.rarity,
       emoji: picked.emoji,
       description: picked.description,
+      linkUrl: picked.linkUrl,
     },
   };
 }

@@ -16,6 +16,7 @@ type Item = {
   weight: number;
   active: boolean;
   description: string;
+  linkUrl: string;
 };
 
 const RARITY_LABEL: Record<string, string> = { COMMON: "일반", RARE: "희귀", EPIC: "에픽", LEGENDARY: "전설" };
@@ -103,6 +104,7 @@ export default function GachaItemsEditor({ items }: { items: Item[] }) {
                     <input name="name" defaultValue={item.name} className="flex-1 rounded-lg border px-3 py-1.5 text-sm" style={{ borderColor: "var(--baseline)" }} />
                   </div>
                   <input name="description" defaultValue={item.description} className="rounded-lg border px-3 py-1.5 text-sm" style={{ borderColor: "var(--baseline)" }} />
+                  <input name="linkUrl" type="url" defaultValue={item.linkUrl} placeholder="링크(선택)" className="rounded-lg border px-3 py-1.5 text-sm" style={{ borderColor: "var(--baseline)" }} />
                   <select name="rarity" defaultValue={item.rarity} className="rounded-lg border px-3 py-1.5 text-sm" style={{ borderColor: "var(--baseline)" }}>
                     <option value="COMMON">일반</option>
                     <option value="RARE">희귀</option>

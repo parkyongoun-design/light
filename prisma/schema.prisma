@@ -26,6 +26,7 @@ model Zone {
   team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId    String
   members   Member[]
+  pulls     GachaPull[]
   createdAt DateTime @default(now())
 }
 
@@ -35,6 +36,7 @@ model Member {
   pinHash      String
   role         String   @default("MEMBER") // "ADMIN" | "MEMBER"
   isZoneLeader Boolean  @default(false)
+  part         String   @default("WORKER") // "WORKER" | "STUDENT" | "JOBSEEKER"
   zone         Zone?    @relation(fields: [zoneId], references: [id], onDelete: SetNull)
   zoneId       String?
   active       Boolean  @default(true)
@@ -50,6 +52,8 @@ model Mission {
   id          String   @id @default(cuid())
   title       String
   description String   @default("")
+  part        String   @default("WORKER") // "WORKER" | "STUDENT" | "JOBSEEKER" | "HOLIDAY"
+  category    String   @default("")
   difficulty  String   @default("EASY") // "EASY" | "MEDIUM" | "HARD"
   points      Int      @default(10)
   order       Int      @default(0)
@@ -77,6 +81,7 @@ model GachaItem {
   rarity      String   @default("COMMON") // "COMMON" | "RARE" | "EPIC" | "LEGENDARY"
   weight      Int      @default(50)
   emoji       String   @default("🎁")
+  linkUrl     String   @default("")
   active      Boolean  @default(true)
   createdAt   DateTime @default(now())
 
@@ -85,18 +90,24 @@ model GachaItem {
 
 model GachaPull {
   id       String    @id @default(cuid())
+  shareId  String    @unique @default(cuid())
   member   Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
   memberId String
+  zone     Zone?     @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  zoneId   String?
   item     GachaItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
   itemId   String
   pulledAt DateTime  @default(now())
 
   @@index([memberId])
+  @@index([zoneId])
 }
 
 model Settings {
   id              String    @id @default("singleton")
   pointsPerTicket Int       @default(100)
   showZoneRanking Boolean   @default(false)
+  showZoneScores  Boolean   @default(false)
+  showHolidayMissions Boolean @default(true)
   missionDeadline DateTime?
 }

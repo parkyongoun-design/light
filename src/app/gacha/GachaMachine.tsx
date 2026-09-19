@@ -19,7 +19,7 @@ const RARITY_COLOR: Record<string, string> = {
   LEGENDARY: "#F59E0B",
 };
 
-function PullButton({ disabled }: { disabled: boolean }) {
+function PullButton({ disabled, label }: { disabled: boolean; label?: string }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -28,7 +28,7 @@ function PullButton({ disabled }: { disabled: boolean }) {
       className="w-full rounded-2xl py-4 text-base font-bold text-white transition disabled:opacity-40"
       style={{ background: "linear-gradient(135deg, var(--series-1), #8b5cf6)" }}
     >
-      {pending ? "뽑는 중..." : "🎰 뽑기 (1장 사용)"}
+      {pending ? "뽑는 중..." : label ?? "🎰 뽑기 (1장 사용)"}
     </button>
   );
 }
@@ -36,10 +36,12 @@ function PullButton({ disabled }: { disabled: boolean }) {
 export default function GachaMachine({
   ticketsAvailable,
   unlimited = false,
+  canPull = true,
   memberName,
 }: {
   ticketsAvailable: number;
   unlimited?: boolean;
+  canPull?: boolean;
   memberName: string;
 }) {
   const [state, formAction] = useFormState<PullState, FormData>(
@@ -48,6 +50,7 @@ export default function GachaMachine({
   );
   const [modalOpen, setModalOpen] = useState(false);
   const [shaking, setShaking] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (state.result) {
@@ -63,7 +66,7 @@ export default function GachaMachine({
   return (
     <div className="card p-5 text-center">
       <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-        보유 뽑기권
+        {unlimited ? "보유 뽑기권" : "우리 구역 뽑기권"}
       </p>
       <p className="mb-4 text-4xl font-bold tabular" style={{ color: "var(--text-primary)" }}>
         {unlimited ? "무제한" : `${ticketsAvailable}장`}
@@ -74,7 +77,7 @@ export default function GachaMachine({
       </div>
 
       <form action={formAction}>
-        <PullButton disabled={!unlimited && ticketsAvailable < 1} />
+        <PullButton disabled={!canPull || (!unlimited && ticketsAvailable < 1)} label={canPull ? undefined : "구역장만 뽑을 수 있어요"} />
       </form>
 
       {state.error && (
@@ -107,6 +110,34 @@ export default function GachaMachine({
                 {state.result.description}
               </p>
             )}
+            {state.result.linkUrl && (
+              <a
+                href={state.result.linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 block rounded-xl border py-2 text-sm font-semibold"
+                style={{ borderColor: "var(--series-1)", color: "var(--series-1)" }}
+              >
+                🔗 링크 열기
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={async () => {
+                const url = `${window.location.origin}/result/${state.result!.shareId}`;
+                try {
+                  await navigator.clipboard.writeText(url);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                } catch {
+                  window.prompt("이 링크를 복사해서 카톡방에 공유하세요", url);
+                }
+              }}
+              className="mt-3 w-full rounded-xl py-2.5 text-sm font-semibold text-white"
+              style={{ background: "var(--series-3)" }}
+            >
+              {copied ? "✅ 링크 복사됨!" : "🔗 결과 링크 복사 (카톡 공유용)"}
+            </button>
             <button
               type="button"
               onClick={() =>
@@ -118,10 +149,10 @@ export default function GachaMachine({
                   memberName,
                 })
               }
-              className="mt-4 w-full rounded-xl py-2.5 text-sm font-semibold text-white"
+              className="mt-2 w-full rounded-xl py-2.5 text-sm font-semibold text-white"
               style={{ background: "linear-gradient(135deg, var(--series-1), #8b5cf6)" }}
             >
-              📸 카톡 공유용 이미지 저장
+              📸 이미지로 저장
             </button>
             <button
               type="button"

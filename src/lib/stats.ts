@@ -1,8 +1,8 @@
 import { prisma } from "./db";
-import { getPointsPerTicket } from "./tickets";
+import { getSettings } from "./tickets";
 
 export async function getOrgStats() {
-  const [teams, missions, pointsPerTicket] = await Promise.all([
+  const [teams, missions, settings, pullCounts] = await Promise.all([
     prisma.team.findMany({
       orderBy: { order: "asc" },
       include: {
@@ -10,28 +10,33 @@ export async function getOrgStats() {
           orderBy: { order: "asc" },
           include: {
             members: {
-              where: { role: "MEMBER" },
+              where: { role: "MEMBER", active: true },
               orderBy: [{ isZoneLeader: "desc" }, { name: "asc" }],
-              include: {
-                completions: { include: { mission: true } },
-                pulls: true,
-              },
+              include: { completions: { include: { mission: true } } },
             },
           },
         },
       },
     }),
-    prisma.mission.count({ where: { active: true } }),
-    getPointsPerTicket(),
+    prisma.mission.findMany({ where: { active: true }, select: { part: true } }),
+    getSettings(),
+    prisma.gachaPull.groupBy({ by: ["zoneId"], _count: { _all: true }, where: { zoneId: { not: null } } }),
   ]);
 
-  const memberStat = (m: (typeof teams)[number]["zones"][number]["members"][number]) => {
-    const totalPoints = m.completions.reduce((sum, c) => sum + c.mission.points, 0);
-    const missionsDone = m.completions.length;
-    const ticketsEarned = Math.floor(totalPoints / pointsPerTicket);
-    const ticketsUsed = m.pulls.length;
-    const ticketsAvailable = Math.max(0, ticketsEarned - ticketsUsed);
-    return { totalPoints, missionsDone, ticketsEarned, ticketsUsed, ticketsAvailable };
+  const { pointsPerTicket, showHolidayMissions } = settings;
+  const missionsByPart = new Map<string, number>();
+  for (const m of missions) missionsByPart.set(m.part, (missionsByPart.get(m.part) ?? 0) + 1);
+  const holidayCount = showHolidayMissions ? missionsByPart.get("HOLIDAY") ?? 0 : 0;
+  const pullsByZone = new Map(pullCounts.map((p) => [p.zoneId as string, p._count._all]));
+
+  type MemberRow = (typeof teams)[number]["zones"][number]["members"][number];
+  const memberStat = (m: MemberRow) => {
+    const visibleIds = (mission: { part: string; active: boolean }) =>
+      mission.active && (mission.part === m.part || (showHolidayMissions && mission.part === "HOLIDAY"));
+    const relevant = m.completions.filter((c) => visibleIds(c.mission));
+    const totalPoints = relevant.reduce((sum, c) => sum + c.mission.points, 0);
+    const available = (missionsByPart.get(m.part) ?? 0) + holidayCount;
+    return { totalPoints, missionsDone: relevant.length, missionsAvailable: available };
   };
 
   const zoneRows = teams.flatMap((team) =>
@@ -39,16 +44,21 @@ export async function getOrgStats() {
       const memberRows = zone.members.map((m) => ({ member: m, stat: memberStat(m) }));
       const totalPoints = memberRows.reduce((s, r) => s + r.stat.totalPoints, 0);
       const missionsDone = memberRows.reduce((s, r) => s + r.stat.missionsDone, 0);
-      const ticketsUsed = memberRows.reduce((s, r) => s + r.stat.ticketsUsed, 0);
+      const missionsAvailable = memberRows.reduce((s, r) => s + r.stat.missionsAvailable, 0);
+      const ticketsUsed = pullsByZone.get(zone.id) ?? 0;
+      const ticketsEarned = Math.floor(totalPoints / pointsPerTicket);
       const memberCount = memberRows.length;
-      const completionRate = memberCount && missions ? missionsDone / (memberCount * missions) : 0;
+      const completionRate = missionsAvailable ? missionsDone / missionsAvailable : 0;
       return {
         zone,
         teamId: team.id,
         memberRows,
         totalPoints,
         missionsDone,
+        missionsAvailable,
         ticketsUsed,
+        ticketsEarned,
+        ticketsAvailable: Math.max(0, ticketsEarned - ticketsUsed),
         memberCount,
         completionRate,
       };
@@ -59,9 +69,10 @@ export async function getOrgStats() {
     const zones = zoneRows.filter((z) => z.teamId === team.id);
     const totalPoints = zones.reduce((s, z) => s + z.totalPoints, 0);
     const missionsDone = zones.reduce((s, z) => s + z.missionsDone, 0);
+    const missionsAvailable = zones.reduce((s, z) => s + z.missionsAvailable, 0);
     const memberCount = zones.reduce((s, z) => s + z.memberCount, 0);
     const ticketsUsed = zones.reduce((s, z) => s + z.ticketsUsed, 0);
-    const completionRate = memberCount && missions ? missionsDone / (memberCount * missions) : 0;
+    const completionRate = missionsAvailable ? missionsDone / missionsAvailable : 0;
     return { team, zones, totalPoints, missionsDone, memberCount, ticketsUsed, completionRate };
   });
 
@@ -72,7 +83,7 @@ export async function getOrgStats() {
     ticketsUsed: teamRows.reduce((s, t) => s + t.ticketsUsed, 0),
     teamCount: teamRows.length,
     zoneCount: zoneRows.length,
-    missionCount: missions,
+    missionCount: missions.length,
   };
 
   return { teamRows, orgTotals };

@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getMemberTicketSummary } from "@/lib/tickets";
+import { getZoneTicketSummary } from "@/lib/tickets";
 import Nav from "@/components/Nav";
 import GachaMachine from "./GachaMachine";
 
@@ -9,48 +10,61 @@ export default async function GachaPage() {
   const member = await getCurrentMember();
   if (!member) redirect("/login");
 
+  const isAdmin = member.role === "ADMIN";
+  const zoneId = member.zoneId;
+
   const [summary, pulls] = await Promise.all([
-    getMemberTicketSummary(member.id),
+    !isAdmin && zoneId ? getZoneTicketSummary(zoneId) : Promise.resolve(null),
     prisma.gachaPull.findMany({
-      where: { memberId: member.id },
+      where: isAdmin ? { memberId: member.id } : { zoneId: zoneId ?? "none" },
       include: { item: true },
       orderBy: { pulledAt: "desc" },
       take: 30,
     }),
   ]);
 
-  const collectionCounts = new Map<string, { name: string; emoji: string; rarity: string; count: number }>();
+  const collectionCounts = new Map<string, { name: string; emoji: string; count: number }>();
   for (const pull of pulls) {
-    const key = pull.itemId;
-    const prev = collectionCounts.get(key);
+    const prev = collectionCounts.get(pull.itemId);
     if (prev) prev.count += 1;
-    else
-      collectionCounts.set(key, {
-        name: pull.item.name,
-        emoji: pull.item.emoji,
-        rarity: pull.item.rarity,
-        count: 1,
-      });
+    else collectionCounts.set(pull.itemId, { name: pull.item.name, emoji: pull.item.emoji, count: 1 });
   }
+
+  const canPull = isAdmin || Boolean(member.isZoneLeader && zoneId);
 
   return (
     <>
       <Nav name={member.name} role={member.role} active="gacha" />
       <main className="mx-auto max-w-2xl px-4 py-6">
-        {member.role === "ADMIN" && (
+        {isAdmin && (
           <p className="mb-3 rounded-lg px-3 py-2 text-center text-xs font-medium" style={{ background: "var(--page-plane)", color: "var(--text-secondary)" }}>
             관리자 미리보기 모드 — 뽑기권 무제한
           </p>
         )}
-        <GachaMachine ticketsAvailable={summary.ticketsAvailable} unlimited={member.role === "ADMIN"} memberName={member.name} />
+        {!isAdmin && (
+          <p className="mb-3 rounded-lg px-3 py-2 text-center text-xs font-medium" style={{ background: "var(--page-plane)", color: "var(--text-secondary)" }}>
+            구역 전체가 함께 모은 뽑기권이에요. 뽑기는 구역장이 대표로 해요.
+          </p>
+        )}
+        <GachaMachine
+          ticketsAvailable={summary?.ticketsAvailable ?? 0}
+          unlimited={isAdmin}
+          canPull={canPull}
+          memberName={member.name}
+        />
+        {summary && (
+          <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>
+            구역 점수 {summary.totalPoints}점 · 다음 뽑기권까지 {summary.pointsPerTicket - summary.pointsIntoNextTicket}점
+          </p>
+        )}
 
         <div className="mt-8">
           <h2 className="mb-2 px-1 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            내 컬렉션
+            {isAdmin ? "내 컬렉션" : "우리 구역 컬렉션"}
           </h2>
           {collectionCounts.size === 0 ? (
             <p className="card px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-              아직 뽑은 아이템이 없어요. 첫 뽑기를 해보세요!
+              아직 뽑은 아이템이 없어요.
             </p>
           ) : (
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -75,14 +89,14 @@ export default async function GachaPage() {
           </h2>
           <div className="card divide-y" style={{ borderColor: "var(--gridline)" }}>
             {pulls.slice(0, 10).map((p) => (
-              <div key={p.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
+              <Link key={p.id} href={`/result/${p.shareId}`} className="flex items-center justify-between px-4 py-2.5 text-sm">
                 <span>
                   {p.item.emoji} {p.item.name}
                 </span>
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>
                   {new Intl.DateTimeFormat("ko-KR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(p.pulledAt)}
                 </span>
-              </div>
+              </Link>
             ))}
             {pulls.length === 0 && (
               <p className="px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>

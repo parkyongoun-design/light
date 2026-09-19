@@ -11,6 +11,11 @@ export async function toggleMissionAction(missionId: string) {
   if (member.role !== "ADMIN") {
     const settings = await getSettings();
     if (settings.missionDeadline && new Date() > settings.missionDeadline) return;
+
+    const mission = await prisma.mission.findUnique({ where: { id: missionId } });
+    const allowed =
+      mission?.active && (mission.part === member.part || (settings.showHolidayMissions && mission.part === "HOLIDAY"));
+    if (!allowed) return;
   }
 
   const existing = await prisma.missionCompletion.findUnique({

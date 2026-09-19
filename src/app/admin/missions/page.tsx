@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/tickets";
+import { MISSION_PARTS, PART_LABEL } from "@/lib/parts";
 import Nav from "@/components/Nav";
 import {
   createMissionAction,
@@ -11,13 +12,15 @@ import {
   updateMissionDeadlineAction,
 } from "./actions";
 
-const DIFFICULTY_LABEL: Record<string, string> = { EASY: "쉬움", MEDIUM: "보통", HARD: "어려움" };
+const DIFFICULTY_LABEL: Record<string, string> = { EASY: "보통", MEDIUM: "중간", HARD: "어려움" };
 
 function toDatetimeLocalValue(date: Date | null): string {
   if (!date) return "";
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
+
+const inputStyle = { borderColor: "var(--baseline)" };
 
 export default async function AdminMissionsPage() {
   const member = await getCurrentMember();
@@ -47,13 +50,7 @@ export default async function AdminMissionsPage() {
             </p>
           </div>
           <div className="flex gap-2">
-            <input
-              name="missionDeadline"
-              type="datetime-local"
-              defaultValue={toDatetimeLocalValue(settings.missionDeadline)}
-              className="flex-1 rounded-lg border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--baseline)" }}
-            />
+            <input name="missionDeadline" type="datetime-local" defaultValue={toDatetimeLocalValue(settings.missionDeadline)} className="flex-1 rounded-lg border px-3 py-2 text-sm" style={inputStyle} />
             <button type="submit" className="rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ background: "var(--series-1)" }}>
               저장
             </button>
@@ -64,96 +61,106 @@ export default async function AdminMissionsPage() {
           <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             새 미션 추가
           </p>
-          <input
-            name="title"
-            placeholder="미션 이름"
-            required
-            className="rounded-lg border px-3 py-2 text-sm outline-none"
-            style={{ borderColor: "var(--baseline)" }}
-          />
           <div className="flex gap-2">
-            <select name="difficulty" className="flex-1 rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--baseline)" }}>
-              <option value="EASY">쉬움 (10점)</option>
-              <option value="MEDIUM">보통 (20점)</option>
-              <option value="HARD">어려움 (30점)</option>
+            <select name="part" className="flex-1 rounded-lg border px-3 py-2 text-sm" style={inputStyle}>
+              {MISSION_PARTS.map((p) => (
+                <option key={p} value={p}>
+                  {PART_LABEL[p]}
+                </option>
+              ))}
             </select>
-            <input
-              name="points"
-              type="number"
-              placeholder="점수(선택)"
-              className="w-28 rounded-lg border px-3 py-2 text-sm"
-              style={{ borderColor: "var(--baseline)" }}
-            />
+            <input name="category" placeholder="분류 (예: 자격증)" className="flex-1 rounded-lg border px-3 py-2 text-sm" style={inputStyle} />
+          </div>
+          <input name="title" placeholder="미션 이름" required className="rounded-lg border px-3 py-2 text-sm outline-none" style={inputStyle} />
+          <div className="flex gap-2">
+            <select name="difficulty" className="flex-1 rounded-lg border px-3 py-2 text-sm" style={inputStyle}>
+              <option value="EASY">보통 (10점)</option>
+              <option value="HARD">어려움 (20점)</option>
+            </select>
+            <input name="points" type="number" placeholder="점수(선택)" className="w-28 rounded-lg border px-3 py-2 text-sm" style={inputStyle} />
           </div>
           <button type="submit" className="rounded-lg py-2 text-sm font-semibold text-white" style={{ background: "var(--series-1)" }}>
             추가하기
           </button>
         </form>
 
-        <div className="card divide-y" style={{ borderColor: "var(--gridline)" }}>
-          {missions.map((m) => (
-            <details key={m.id} className="px-4 py-3">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <p
-                    className="truncate text-sm font-medium"
-                    style={{ color: m.active ? "var(--text-primary)" : "var(--text-muted)" }}
-                  >
-                    {m.title}
-                  </p>
-                  <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {DIFFICULTY_LABEL[m.difficulty]} · {m.points}점 {!m.active && "· 비활성"}
-                  </p>
-                </div>
-              </summary>
-
-              <div className="mt-3 flex flex-col gap-3">
-                <form action={updateMissionAction.bind(null, m.id)} className="flex flex-col gap-2">
-                  <input
-                    name="title"
-                    defaultValue={m.title}
-                    className="rounded-lg border px-3 py-1.5 text-sm"
-                    style={{ borderColor: "var(--baseline)" }}
-                  />
-                  <div className="flex gap-2">
-                    <select name="difficulty" defaultValue={m.difficulty} className="flex-1 rounded-lg border px-3 py-1.5 text-sm" style={{ borderColor: "var(--baseline)" }}>
-                      <option value="EASY">쉬움</option>
-                      <option value="MEDIUM">보통</option>
-                      <option value="HARD">어려움</option>
-                    </select>
-                    <input
-                      name="points"
-                      type="number"
-                      defaultValue={m.points}
-                      className="w-24 rounded-lg border px-3 py-1.5 text-sm"
-                      style={{ borderColor: "var(--baseline)" }}
-                    />
-                  </div>
-                  <button type="submit" className="self-start rounded-lg px-3 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
-                    저장
-                  </button>
-                </form>
-                <div className="flex gap-2">
-                  <form action={toggleMissionActiveAction.bind(null, m.id)}>
-                    <button type="submit" className="rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: "var(--baseline)", color: "var(--text-secondary)" }}>
-                      {m.active ? "비활성화" : "활성화"}
-                    </button>
-                  </form>
-                  <form action={deleteMissionAction.bind(null, m.id)}>
-                    <button type="submit" className="rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
-                      삭제
-                    </button>
-                  </form>
-                </div>
+        {MISSION_PARTS.map((part) => {
+          const list = missions.filter((m) => m.part === part);
+          const total = list.filter((m) => m.active).reduce((s, m) => s + m.points, 0);
+          return (
+            <div key={part} className="mb-6">
+              <div className="mb-2 flex items-baseline justify-between px-1">
+                <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                  {PART_LABEL[part]}
+                </h2>
+                <span className="tabular text-xs" style={{ color: "var(--text-muted)" }}>
+                  {list.filter((m) => m.active).length}개 · 만점 {total}점
+                </span>
               </div>
-            </details>
-          ))}
-          {missions.length === 0 && (
-            <p className="px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-              등록된 미션이 없습니다.
-            </p>
-          )}
-        </div>
+              <div className="card divide-y" style={{ borderColor: "var(--gridline)" }}>
+                {list.map((m) => (
+                  <details key={m.id} className="px-4 py-3">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium" style={{ color: m.active ? "var(--text-primary)" : "var(--text-muted)" }}>
+                          {m.title}
+                        </p>
+                        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                          {m.category && `${m.category} · `}
+                          {DIFFICULTY_LABEL[m.difficulty]} · {m.points}점 {!m.active && "· 비활성"}
+                        </p>
+                      </div>
+                    </summary>
+
+                    <div className="mt-3 flex flex-col gap-3">
+                      <form action={updateMissionAction.bind(null, m.id)} className="flex flex-col gap-2">
+                        <div className="flex gap-2">
+                          <select name="part" defaultValue={m.part} className="flex-1 rounded-lg border px-3 py-1.5 text-sm" style={inputStyle}>
+                            {MISSION_PARTS.map((p) => (
+                              <option key={p} value={p}>
+                                {PART_LABEL[p]}
+                              </option>
+                            ))}
+                          </select>
+                          <input name="category" defaultValue={m.category} placeholder="분류" className="flex-1 rounded-lg border px-3 py-1.5 text-sm" style={inputStyle} />
+                        </div>
+                        <input name="title" defaultValue={m.title} className="rounded-lg border px-3 py-1.5 text-sm" style={inputStyle} />
+                        <div className="flex gap-2">
+                          <select name="difficulty" defaultValue={m.difficulty} className="flex-1 rounded-lg border px-3 py-1.5 text-sm" style={inputStyle}>
+                            <option value="EASY">보통</option>
+                            <option value="MEDIUM">중간</option>
+                            <option value="HARD">어려움</option>
+                          </select>
+                          <input name="points" type="number" defaultValue={m.points} className="w-24 rounded-lg border px-3 py-1.5 text-sm" style={inputStyle} />
+                        </div>
+                        <button type="submit" className="self-start rounded-lg px-3 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
+                          저장
+                        </button>
+                      </form>
+                      <div className="flex gap-2">
+                        <form action={toggleMissionActiveAction.bind(null, m.id)}>
+                          <button type="submit" className="rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: "var(--baseline)", color: "var(--text-secondary)" }}>
+                            {m.active ? "비활성화" : "활성화"}
+                          </button>
+                        </form>
+                        <form action={deleteMissionAction.bind(null, m.id)}>
+                          <button type="submit" className="rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
+                            삭제
+                          </button>
+                        </form>
+                      </div>
+                    </div>
+                  </details>
+                ))}
+                {list.length === 0 && (
+                  <p className="px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+                    등록된 미션이 없습니다.
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </main>
     </>
   );

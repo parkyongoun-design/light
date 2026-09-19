@@ -4,7 +4,8 @@ import { getOrgStats } from "@/lib/stats";
 import { getSettings } from "@/lib/tickets";
 import Nav from "@/components/Nav";
 import BarChart from "@/components/BarChart";
-import { updateShowZoneRankingAction } from "./actions";
+import { PART_LABEL } from "@/lib/parts";
+import { updateDisplaySettingsAction } from "./actions";
 
 function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -60,20 +61,29 @@ export default async function AdminOverviewPage() {
           전체 현황
         </h1>
 
-        <form action={updateShowZoneRankingAction} className="card mb-6 flex items-center justify-between gap-3 p-4">
-          <div>
-            <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              전체 구역 순위 공개
-            </p>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              구역원들의 "우리 구역" 페이지에 전체 30구역 순위를 보여줄지 정합니다. 순위가 낮은 구역원들의 동기부여가 걱정되면 꺼두세요.
-            </p>
-          </div>
-          <label className="flex shrink-0 items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-            <input type="checkbox" name="showZoneRanking" defaultChecked={settings.showZoneRanking} />
-            공개
+        <form action={updateDisplaySettingsAction} className="card mb-6 flex flex-col gap-3 p-4">
+          <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            구역원 화면 표시 설정
+          </p>
+          <label className="flex items-start gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <input type="checkbox" name="showZoneScores" defaultChecked={settings.showZoneScores} className="mt-0.5" />
+            <span>
+              <b>구역원별 점수표 공개</b> — 꺼두면 구역 총점·참석률만 보이고, 개인별 점수는 관리자만 봅니다.
+            </span>
           </label>
-          <button type="submit" className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
+          <label className="flex items-start gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <input type="checkbox" name="showZoneRanking" defaultChecked={settings.showZoneRanking} className="mt-0.5" />
+            <span>
+              <b>전체 구역 순위 공개</b> — 30구역 순위를 보여줍니다. 낮은 순위 구역의 동기부여가 걱정되면 꺼두세요.
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+            <input type="checkbox" name="showHolidayMissions" defaultChecked={settings.showHolidayMissions} className="mt-0.5" />
+            <span>
+              <b>명절 미션 공개</b> — 모든 구역원에게 명절 미션을 추가로 보여줍니다.
+            </span>
+          </label>
+          <button type="submit" className="self-start rounded-lg px-4 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
             저장
           </button>
         </form>
@@ -190,17 +200,16 @@ export default async function AdminOverviewPage() {
                         {z.zone.name}
                       </span>
                       <span className="tabular text-xs" style={{ color: "var(--text-muted)" }}>
-                        {z.memberCount}명 · {z.totalPoints.toLocaleString()}점 · 완료율 {Math.round(z.completionRate * 100)}%
+                        {z.memberCount}명 · {z.totalPoints.toLocaleString()}점 · 뽑기권 {z.ticketsAvailable}장 · 참석률 {Math.round(z.completionRate * 100)}%
                       </span>
                     </summary>
                     <table className="mt-2 w-full text-left text-xs">
                       <thead>
                         <tr style={{ color: "var(--text-muted)" }}>
                           <th className="py-1 font-medium">이름</th>
-                          <th className="py-1 font-medium">완료 미션</th>
+                          <th className="py-1 font-medium">파트</th>
+                          <th className="py-1 font-medium">완료</th>
                           <th className="py-1 font-medium">점수</th>
-                          <th className="py-1 font-medium">사용 뽑기권</th>
-                          <th className="py-1 font-medium">보유 뽑기권</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -214,10 +223,13 @@ export default async function AdminOverviewPage() {
                                 </span>
                               )}
                             </td>
-                            <td className="tabular py-1.5">{stat.missionsDone}</td>
+                            <td className="py-1.5" style={{ color: "var(--text-secondary)" }}>
+                              {PART_LABEL[m.part]}
+                            </td>
+                            <td className="tabular py-1.5">
+                              {stat.missionsDone}/{stat.missionsAvailable}
+                            </td>
                             <td className="tabular py-1.5">{stat.totalPoints}</td>
-                            <td className="tabular py-1.5">{stat.ticketsUsed}</td>
-                            <td className="tabular py-1.5">{stat.ticketsAvailable}</td>
                           </tr>
                         ))}
                       </tbody>

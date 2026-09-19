@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import Nav from "@/components/Nav";
+import { MEMBER_PARTS, PART_LABEL } from "@/lib/parts";
 import {
   createTeamAction,
   renameTeamAction,
@@ -118,6 +119,9 @@ export default async function AdminOrgPage() {
                                 <details>
                                   <summary className="cursor-pointer list-none">
                                     <span style={{ color: m.active ? "var(--text-primary)" : "var(--text-muted)" }}>{m.name}</span>
+                                    <span className="ml-1 text-[10px]" style={{ color: "var(--text-muted)" }}>
+                                      {PART_LABEL[m.part]}
+                                    </span>
                                     {m.isZoneLeader && (
                                       <span className="ml-1 rounded px-1 py-0.5 text-[10px]" style={{ background: "var(--gridline)", color: "var(--text-secondary)" }}>
                                         구역장
@@ -131,6 +135,13 @@ export default async function AdminOrgPage() {
                                       {allZones.map((z) => (
                                         <option key={z.id} value={z.id}>
                                           {z.label}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    <select name="part" defaultValue={m.part} className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--baseline)" }}>
+                                      {MEMBER_PARTS.map((p) => (
+                                        <option key={p} value={p}>
+                                          {PART_LABEL[p]}
                                         </option>
                                       ))}
                                     </select>
@@ -166,6 +177,13 @@ export default async function AdminOrgPage() {
 
                       <form action={createMemberAction.bind(null, zone.id)} className="mt-1 flex flex-wrap items-center gap-2 rounded-lg p-2" style={{ background: "var(--page-plane)" }}>
                         <input name="name" placeholder="이름" required className="w-24 rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--baseline)" }} />
+                        <select name="part" className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--baseline)" }}>
+                          {MEMBER_PARTS.map((p) => (
+                            <option key={p} value={p}>
+                              {PART_LABEL[p]}
+                            </option>
+                          ))}
+                        </select>
                         <input name="pin" placeholder="PIN(기본 1234)" className="w-28 rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--baseline)" }} />
                         <label className="flex items-center gap-1 text-xs" style={{ color: "var(--text-secondary)" }}>
                           <input type="checkbox" name="isZoneLeader" />

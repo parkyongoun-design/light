@@ -4,11 +4,13 @@ import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
+import { isMemberPart } from "@/lib/parts";
 
 function refresh() {
   revalidatePath("/admin/org");
   revalidatePath("/admin");
   revalidatePath("/login");
+  revalidatePath("/zone");
 }
 
 export async function createTeamAction(formData: FormData) {
@@ -62,9 +64,11 @@ export async function createMemberAction(zoneId: string, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
   const pin = String(formData.get("pin") || "1234").trim() || "1234";
   const isZoneLeader = formData.get("isZoneLeader") === "on";
+  const partRaw = String(formData.get("part") || "");
+  const part = isMemberPart(partRaw) ? partRaw : "WORKER";
   if (!name) return;
   const pinHash = await bcrypt.hash(pin, 10);
-  await prisma.member.create({ data: { name, pinHash, zoneId, isZoneLeader, role: "MEMBER" } });
+  await prisma.member.create({ data: { name, pinHash, zoneId, isZoneLeader, part, role: "MEMBER" } });
   refresh();
 }
 
@@ -74,14 +78,17 @@ export async function updateMemberAction(memberId: string, formData: FormData) {
   const zoneId = String(formData.get("zoneId") || "") || null;
   const isZoneLeader = formData.get("isZoneLeader") === "on";
   const newPin = String(formData.get("newPin") || "").trim();
+  const partRaw = String(formData.get("part") || "");
   if (!name) return;
 
   const data: {
     name: string;
     zoneId: string | null;
     isZoneLeader: boolean;
+    part?: string;
     pinHash?: string;
   } = { name, zoneId, isZoneLeader };
+  if (isMemberPart(partRaw)) data.part = partRaw;
 
   if (newPin) {
     data.pinHash = await bcrypt.hash(newPin, 10);

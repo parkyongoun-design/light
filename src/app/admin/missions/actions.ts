@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
+import { isMissionPart } from "@/lib/parts";
 
-const DIFFICULTY_POINTS: Record<string, number> = { EASY: 10, MEDIUM: 20, HARD: 30 };
+const DIFFICULTY_POINTS: Record<string, number> = { EASY: 10, MEDIUM: 15, HARD: 20 };
 
 export async function createMissionAction(formData: FormData) {
   await requireAdmin();
@@ -12,12 +13,17 @@ export async function createMissionAction(formData: FormData) {
   const difficulty = String(formData.get("difficulty") || "EASY");
   const pointsRaw = formData.get("points");
   const points = pointsRaw ? Number(pointsRaw) : DIFFICULTY_POINTS[difficulty] ?? 10;
+  const partRaw = String(formData.get("part") || "");
+  const part = isMissionPart(partRaw) ? partRaw : "WORKER";
+  const category = String(formData.get("category") || "").trim();
   if (!title) return;
 
   const last = await prisma.mission.findFirst({ orderBy: { order: "desc" } });
   await prisma.mission.create({
     data: {
       title,
+      part,
+      category,
       difficulty: difficulty as "EASY" | "MEDIUM" | "HARD",
       points,
       order: (last?.order ?? 0) + 1,
@@ -32,11 +38,19 @@ export async function updateMissionAction(missionId: string, formData: FormData)
   const title = String(formData.get("title") || "").trim();
   const difficulty = String(formData.get("difficulty") || "EASY");
   const points = Number(formData.get("points") || 10);
+  const partRaw = String(formData.get("part") || "");
+  const category = String(formData.get("category") || "").trim();
   if (!title) return;
 
   await prisma.mission.update({
     where: { id: missionId },
-    data: { title, difficulty: difficulty as "EASY" | "MEDIUM" | "HARD", points },
+    data: {
+      title,
+      category,
+      difficulty: difficulty as "EASY" | "MEDIUM" | "HARD",
+      points,
+      ...(isMissionPart(partRaw) ? { part: partRaw } : {}),
+    },
   });
   revalidatePath("/admin/missions");
   revalidatePath("/zone");

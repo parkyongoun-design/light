@@ -59,6 +59,7 @@ export default async function AdminGachaPage() {
             <input name="name" placeholder="아이템 이름" required className="flex-1 rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--baseline)" }} />
           </div>
           <input name="description" placeholder="설명(선택)" className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--baseline)" }} />
+          <input name="linkUrl" type="url" placeholder="링크(선택, 예: 심리테스트 주소 https://...)" className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--baseline)" }} />
           <div className="flex gap-2">
             <select name="rarity" className="flex-1 rounded-lg border px-3 py-2 text-sm" style={{ borderColor: "var(--baseline)" }}>
               <option value="COMMON">일반</option>

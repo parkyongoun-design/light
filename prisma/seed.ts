@@ -15,13 +15,83 @@ const GIVEN_NAMES = [
 
 let nameCounter = 0;
 function randomName(): string {
-  // Demo data only — duplicate display names are fine here since the real
-  // roster (provided later) will replace this seed data entirely.
+  // Demo data only — the real roster replaces this seed data later.
   const f = FAMILY_NAMES[nameCounter % FAMILY_NAMES.length];
   const g = GIVEN_NAMES[Math.floor(nameCounter / FAMILY_NAMES.length) % GIVEN_NAMES.length];
   nameCounter++;
   return `${f}${g}`;
 }
+
+type MissionSeed = { part: string; category: string; title: string; hard?: boolean };
+
+// 1 mission = 10 points; hard missions = 20 points.
+const MISSIONS: MissionSeed[] = [
+  // 직장인
+  { part: "WORKER", category: "자격증", title: "수험서/교재 인증 (최근 출제 경향·난이도 변화도 언급)" },
+  { part: "WORKER", category: "자격증", title: "공부 사진 (가족·지인에게 진행 상황 공유)" },
+  { part: "WORKER", category: "자격증", title: "Q-Net 시험 접수 내역 (시험 일정 보이게)" },
+  { part: "WORKER", category: "자격증", title: "응시 결과 공유 (불합격이면 성적표와 재도전 계획)" },
+  { part: "WORKER", category: "자격증", title: "자격증 취득 증명서", hard: true },
+  { part: "WORKER", category: "야근/업무", title: "회사 PC 화면 (우측 하단 시계 보이게)" },
+  { part: "WORKER", category: "야근/업무", title: "설계도·발표자료 등 진행 중인 업무 산출물 공유" },
+  { part: "WORKER", category: "동아리/소모임", title: "모임 활동 사진" },
+  { part: "WORKER", category: "동아리/소모임", title: "모임용 개인 장비·도구 사진" },
+  { part: "WORKER", category: "동아리/소모임", title: "실제 모임 그룹 대화 내역" },
+  // 대학생
+  { part: "STUDENT", category: "팀플/과제", title: "발표자료 작성 현황 (완성 PPT, 조원 역할분담 진행)" },
+  { part: "STUDENT", category: "팀플/과제", title: "조원 모임 사진 (도서관·스터디룸 회의)" },
+  { part: "STUDENT", category: "팀플/과제", title: "과제·전공서 공부 사진 (카페·도서관)" },
+  { part: "STUDENT", category: "자격증/학업", title: "Q-Net 시험 신청 내역" },
+  { part: "STUDENT", category: "자격증/학업", title: "수험서 공부 사진 (정독실·도서관·카페)" },
+  { part: "STUDENT", category: "동아리/대외활동", title: "활동 장소·준비물·장비 사진" },
+  { part: "STUDENT", category: "동아리/대외활동", title: "동아리원과의 일정·활동 메신저 내역" },
+  { part: "STUDENT", category: "봉사/알바/스터디", title: "봉사활동 현장 사진" },
+  { part: "STUDENT", category: "봉사/알바/스터디", title: "알바 근무 사진" },
+  { part: "STUDENT", category: "봉사/알바/스터디", title: "급여 입금 내역" },
+  { part: "STUDENT", category: "봉사/알바/스터디", title: "스터디원 집합 사진·출석" },
+  { part: "STUDENT", category: "봉사/알바/스터디", title: "스터디 교재·노트필기 기록" },
+  { part: "STUDENT", category: "졸업작품/공모전", title: "졸업작품·공모전 발표자료" },
+  { part: "STUDENT", category: "졸업작품/공모전", title: "공모전 신청 포스터·제출 내역", hard: true },
+  { part: "STUDENT", category: "졸업작품/공모전", title: "팀원과의 작품 제작·회의 사진" },
+  // 휴학생·취준생
+  { part: "JOBSEEKER", category: "면접/이력서", title: "서류 합격 통지서·면접 일정 안내 화면", hard: true },
+  { part: "JOBSEEKER", category: "면접/이력서", title: "이력서·자기소개서 작성 화면" },
+  { part: "JOBSEEKER", category: "면접/이력서", title: "예상 질문 대비 노트" },
+  { part: "JOBSEEKER", category: "면접/이력서", title: "면접 복장 착용 사진" },
+  { part: "JOBSEEKER", category: "어학원/스터디", title: "토익·어학원 수강 등록 내역" },
+  { part: "JOBSEEKER", category: "어학원/스터디", title: "학원 강의실·주변 학습 환경 사진" },
+  { part: "JOBSEEKER", category: "어학원/스터디", title: "필기 노트·단어장" },
+  { part: "JOBSEEKER", category: "어학원/스터디", title: "교재 학습 달성 기록" },
+  { part: "JOBSEEKER", category: "공모전/자격증/알바", title: "공모전 신청 내역·포스터", hard: true },
+  { part: "JOBSEEKER", category: "공모전/자격증/알바", title: "팀원과 공모전 준비 현장 사진" },
+  { part: "JOBSEEKER", category: "공모전/자격증/알바", title: "Q-Net 접수증" },
+  { part: "JOBSEEKER", category: "공모전/자격증/알바", title: "일일 목표 학습 달성 인증" },
+  { part: "JOBSEEKER", category: "공모전/자격증/알바", title: "알바 근무 사진" },
+  { part: "JOBSEEKER", category: "공모전/자격증/알바", title: "급여 내역" },
+  // 명절 (전 구성원 공통)
+  { part: "HOLIDAY", category: "집안 돕기", title: "설거지" },
+  { part: "HOLIDAY", category: "집안 돕기", title: "식사 준비 돕기" },
+  { part: "HOLIDAY", category: "집안 돕기", title: "안마" },
+  { part: "HOLIDAY", category: "효도", title: "추석 선물 드리기" },
+  { part: "HOLIDAY", category: "효도", title: "부모님께 전화드리기 (본가에 못 가는 경우)" },
+  { part: "HOLIDAY", category: "부모님 알아가기", title: "부모님의 버킷리스트 물어보기" },
+  { part: "HOLIDAY", category: "부모님 알아가기", title: "가장 기억에 남는 시절 물어보기" },
+  { part: "HOLIDAY", category: "부모님 알아가기", title: "부모님 MBTI 물어보기" },
+  { part: "HOLIDAY", category: "부모님 알아가기", title: "부모님 장래희망이 뭐였는지 물어보기" },
+  { part: "HOLIDAY", category: "함께하기", title: "부모님과 같이 놀러가기", hard: true },
+];
+
+// Prizes are conversation starters the whole zone shares. Add real psych-test links via /admin/gacha.
+const GACHA_ITEMS = [
+  { name: "오늘의 밸런스 게임", rarity: "COMMON", weight: 30, emoji: "⚖️", description: "구역원 각자 A/B 중 하나를 골라 이유를 말해보세요." },
+  { name: "요즘 빠져있는 것 말하기", rarity: "COMMON", weight: 30, emoji: "🔥", description: "요즘 푹 빠져 있는 것 하나씩 소개해요." },
+  { name: "최근 가장 웃겼던 일", rarity: "COMMON", weight: 25, emoji: "😂", description: "이번 주 가장 웃겼던 순간을 나눠보세요." },
+  { name: "인생 영화·드라마 추천 릴레이", rarity: "RARE", weight: 10, emoji: "🎬", description: "한 명씩 인생작을 추천하고 이유를 말해요." },
+  { name: "MBTI 궁합 토크", rarity: "RARE", weight: 8, emoji: "🧩", description: "서로의 MBTI를 맞춰보고 잘 맞는 점을 찾아보세요." },
+  { name: "함께 하는 심리테스트", rarity: "EPIC", weight: 5, emoji: "🔮", description: "링크의 심리테스트를 다 같이 해보고 결과를 공유해요." },
+  { name: "10년 뒤 내 모습 토크", rarity: "EPIC", weight: 4, emoji: "🚀", description: "10년 뒤 어떤 모습이고 싶은지 이야기해요." },
+  { name: "인생 명장면 한 가지씩", rarity: "LEGENDARY", weight: 2, emoji: "🌟", description: "지금까지 인생에서 가장 빛났던 순간을 나눠보세요." },
+];
 
 async function main() {
   console.log("Seeding...");
@@ -35,98 +105,65 @@ async function main() {
   await prisma.team.deleteMany();
   await prisma.settings.deleteMany();
 
-  await prisma.settings.create({ data: { id: "singleton", pointsPerTicket: 100 } });
+  await prisma.settings.create({
+    data: {
+      id: "singleton",
+      pointsPerTicket: 100,
+      missionDeadline: new Date("2026-09-26T14:59:00.000Z"), // 2026-09-26 23:59 KST
+    },
+  });
 
   const defaultPinHash = await bcrypt.hash("1234", 10);
   const adminPinHash = await bcrypt.hash("0000", 10);
 
-  await prisma.member.create({
-    data: {
-      name: "박용운",
-      pinHash: adminPinHash,
-      role: "ADMIN",
-    },
-  });
-
-  const missions = [
-    { title: "새벽예배 1회 참석", difficulty: "EASY", points: 10, order: 1 },
-    { title: "말씀 묵상 노트 작성", difficulty: "EASY", points: 10, order: 2 },
-    { title: "구역원에게 안부 연락하기", difficulty: "EASY", points: 10, order: 3 },
-    { title: "주보 소식 SNS 공유", difficulty: "EASY", points: 10, order: 4 },
-    { title: "성경 5장 통독", difficulty: "MEDIUM", points: 20, order: 5 },
-    { title: "구역예배 참석", difficulty: "MEDIUM", points: 20, order: 6 },
-    { title: "새가족 초청하기", difficulty: "MEDIUM", points: 20, order: 7 },
-    { title: "봉사활동 1회 참여", difficulty: "MEDIUM", points: 20, order: 8 },
-    { title: "한 주간 매일 기도일기 작성", difficulty: "HARD", points: 30, order: 9 },
-    { title: "성경 한 권 완독", difficulty: "HARD", points: 30, order: 10 },
-    { title: "전도 대상자와 만남 갖기", difficulty: "HARD", points: 30, order: 11 },
-    { title: "구역 리더 세미나 수료", difficulty: "HARD", points: 30, order: 12 },
-  ] as const;
+  await prisma.member.create({ data: { name: "박용운", pinHash: adminPinHash, role: "ADMIN" } });
 
   await prisma.mission.createMany({
-    data: missions.map((m) => ({ ...m })),
+    data: MISSIONS.map((m, i) => ({
+      part: m.part,
+      category: m.category,
+      title: m.title,
+      difficulty: m.hard ? "HARD" : "EASY",
+      points: m.hard ? 20 : 10,
+      order: i + 1,
+    })),
   });
   const missionRows = await prisma.mission.findMany();
 
-  await prisma.gachaItem.createMany({
-    data: [
-      { name: "감사 스티커", rarity: "COMMON", weight: 45, emoji: "⭐" },
-      { name: "믹스커피 세트", rarity: "COMMON", weight: 35, emoji: "☕" },
-      { name: "카페 기프티콘", rarity: "RARE", weight: 12, emoji: "🎟️" },
-      { name: "문화상품권 1만원", rarity: "RARE", weight: 8, emoji: "🎫" },
-      { name: "무선이어폰", rarity: "EPIC", weight: 4, emoji: "🎧" },
-      { name: "치킨 기프티콘", rarity: "EPIC", weight: 6, emoji: "🍗" },
-      { name: "구역장 추천 도서 세트", rarity: "EPIC", weight: 5, emoji: "📚" },
-      { name: "5만원 상당 상품권", rarity: "LEGENDARY", weight: 1, emoji: "💎" },
-      { name: "깜짝 특별 선물", rarity: "LEGENDARY", weight: 1, emoji: "🏆" },
-    ],
-  });
+  await prisma.gachaItem.createMany({ data: GACHA_ITEMS });
 
-  let teamCounter = 0;
+  const parts = ["WORKER", "STUDENT", "JOBSEEKER"];
+  let partCounter = 0;
 
   for (let t = 1; t <= TEAM_COUNT; t++) {
-    const team = await prisma.team.create({
-      data: { name: `${t}팀`, order: t },
-    });
-    teamCounter++;
-
+    const team = await prisma.team.create({ data: { name: `${t}팀`, order: t } });
     for (let z = 1; z <= ZONES_PER_TEAM; z++) {
-      const zone = await prisma.zone.create({
-        data: { name: `${t}팀 ${z}구역`, order: z, teamId: team.id },
-      });
-
-      const memberData = [];
-      for (let m = 1; m <= MEMBERS_PER_ZONE; m++) {
-        memberData.push({
+      const zone = await prisma.zone.create({ data: { name: `${t}팀 ${z}구역`, order: z, teamId: team.id } });
+      await prisma.member.createMany({
+        data: Array.from({ length: MEMBERS_PER_ZONE }, (_, m) => ({
           name: randomName(),
           pinHash: defaultPinHash,
-          role: "MEMBER" as const,
-          isZoneLeader: m === 1,
+          role: "MEMBER",
+          isZoneLeader: m === 0,
+          part: parts[partCounter++ % parts.length],
           zoneId: zone.id,
-        });
-      }
-      await prisma.member.createMany({ data: memberData });
+        })),
+      });
     }
   }
 
-  // Sprinkle some realistic mission-completion activity so dashboards have data to show.
-  const allMembers = await prisma.member.findMany({ where: { role: { not: "ADMIN" } } });
+  const allMembers = await prisma.member.findMany({ where: { role: "MEMBER" } });
   const completionRows: { memberId: string; missionId: string }[] = [];
-
   for (const member of allMembers) {
-    const activity = Math.random(); // some members more active than others
+    const activity = Math.random();
     for (const mission of missionRows) {
-      const roll = Math.random();
-      const threshold = mission.difficulty === "EASY" ? 0.75 : mission.difficulty === "MEDIUM" ? 0.5 : 0.3;
-      if (roll < threshold * (0.4 + activity)) {
-        completionRows.push({ memberId: member.id, missionId: mission.id });
-      }
+      if (mission.part !== member.part && mission.part !== "HOLIDAY") continue;
+      if (Math.random() < 0.15 + activity * 0.6) completionRows.push({ memberId: member.id, missionId: mission.id });
     }
   }
-
   await prisma.missionCompletion.createMany({ data: completionRows });
 
-  console.log(`Seeded ${teamCounter} teams, ${allMembers.length} members, ${completionRows.length} completions.`);
+  console.log(`Seeded ${TEAM_COUNT} teams, ${allMembers.length} members, ${missionRows.length} missions, ${completionRows.length} completions.`);
   console.log("Login PINs — all demo members: 1234, 박용운(관리자): 0000");
 }
 

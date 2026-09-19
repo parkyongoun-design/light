@@ -38,10 +38,11 @@ export async function createGachaItemAction(formData: FormData) {
   const weight = Number(formData.get("weight") || 10);
   const emoji = String(formData.get("emoji") || "🎁").trim() || "🎁";
   const description = String(formData.get("description") || "").trim();
+  const linkUrl = String(formData.get("linkUrl") || "").trim();
   if (!name) return;
 
   await prisma.gachaItem.create({
-    data: { name, rarity: rarity as "COMMON" | "RARE" | "EPIC" | "LEGENDARY", weight, emoji, description },
+    data: { name, rarity: rarity as "COMMON" | "RARE" | "EPIC" | "LEGENDARY", weight, emoji, description, linkUrl },
   });
   revalidatePath("/admin/gacha");
   revalidatePath("/gacha");
@@ -54,11 +55,12 @@ export async function updateGachaItemAction(itemId: string, formData: FormData) 
   const weight = Number(formData.get("weight") || 10);
   const emoji = String(formData.get("emoji") || "🎁").trim() || "🎁";
   const description = String(formData.get("description") || "").trim();
+  const linkUrl = String(formData.get("linkUrl") || "").trim();
   if (!name) return;
 
   await prisma.gachaItem.update({
     where: { id: itemId },
-    data: { name, rarity: rarity as "COMMON" | "RARE" | "EPIC" | "LEGENDARY", weight, emoji, description },
+    data: { name, rarity: rarity as "COMMON" | "RARE" | "EPIC" | "LEGENDARY", weight, emoji, description, linkUrl },
   });
   revalidatePath("/admin/gacha");
   revalidatePath("/gacha");

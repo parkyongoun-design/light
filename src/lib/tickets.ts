@@ -1,11 +1,9 @@
 import { prisma } from "./db";
 
 export async function getSettings() {
-  return prisma.settings.upsert({
-    where: { id: "singleton" },
-    update: {},
-    create: { id: "singleton" },
-  });
+  const existing = await prisma.settings.findUnique({ where: { id: "singleton" } });
+  if (existing) return existing;
+  return prisma.settings.upsert({ where: { id: "singleton" }, update: {}, create: { id: "singleton" } });
 }
 
 export async function getPointsPerTicket(): Promise<number> {

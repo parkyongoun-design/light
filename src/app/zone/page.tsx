@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCurrentMember } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getSettings, getZoneTicketSummary, visibleMissionWhere } from "@/lib/tickets";
+import { getSettings, getZoneTicketSummary } from "@/lib/tickets";
 import { getOrgStats } from "@/lib/stats";
-import { PART_LABEL } from "@/lib/parts";
+import { PART_LABEL, PART_BUTTON_ORDER, PART_EMOJI } from "@/lib/parts";
 import Nav from "@/components/Nav";
-import { toggleMissionAction } from "./actions";
+import PartCard from "./PartCard";
 
 export default async function ZonePage() {
   const member = await getCurrentMember();
@@ -19,25 +19,19 @@ export default async function ZonePage() {
     : null;
 
   const [missions, completions, summary, orgStats] = await Promise.all([
-    prisma.mission.findMany({
-      where: visibleMissionWhere(member.part, settings.showHolidayMissions),
-      orderBy: { order: "asc" },
-    }),
+    prisma.mission.findMany({ where: { active: true }, select: { id: true, part: true }, orderBy: { order: "asc" } }),
     prisma.missionCompletion.findMany({ where: { memberId: member.id } }),
     member.zoneId ? getZoneTicketSummary(member.zoneId) : Promise.resolve(null),
-    member.zoneId ? getOrgStats() : Promise.resolve(null),
+    member.zoneId ? getOrgStats(settings.showZoneRanking ? {} : { zoneId: member.zoneId }) : Promise.resolve(null),
   ]);
 
   const doneIds = new Set(completions.map((c) => c.missionId));
-  const myDone = missions.filter((m) => doneIds.has(m.id)).length;
-
-  const sections = [member.part, "HOLIDAY"]
-    .filter((part) => missions.some((m) => m.part === part))
-    .map((part) => {
-      const list = missions.filter((m) => m.part === part);
-      const categories = [...new Set(list.map((m) => m.category))];
-      return { part, categories: categories.map((c) => ({ name: c, missions: list.filter((m) => m.category === c) })) };
-    });
+  const partStats = PART_BUTTON_ORDER.filter((part) => part !== "HOLIDAY" || settings.showHolidayMissions).map((part) => {
+    const list = missions.filter((m) => m.part === part);
+    return { part, total: list.length, done: list.filter((m) => doneIds.has(m.id)).length };
+  });
+  const myMissions = missions.filter((m) => m.part === member.part || (settings.showHolidayMissions && m.part === "HOLIDAY"));
+  const myDone = myMissions.filter((m) => doneIds.has(m.id)).length;
 
   const allZones = orgStats?.teamRows.flatMap((t) => t.zones.map((z) => ({ team: t.team, zone: z }))) ?? [];
   const myZoneStats = allZones.find((e) => e.zone.zone.id === member.zoneId) ?? null;
@@ -93,68 +87,24 @@ export default async function ZonePage() {
               <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: "var(--series-1)" }} />
             </div>
             <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-              내 미션 {myDone}/{missions.length}개 완료 · 뽑기는 구역장이 대표로 해요
+              내 미션 {myDone}/{myMissions.length}개 완료 · 뽑기는 구역장이 대표로 해요
             </p>
           </div>
         )}
 
-        {sections.map(({ part, categories }) => (
-          <div key={part} className="mb-6">
-            <h2 className="mb-3 px-1 text-base font-bold" style={{ color: "var(--text-primary)" }}>
-              {part === "HOLIDAY" ? "🌕 명절 미션" : `${PART_LABEL[part]} 미션`}
-            </h2>
-            {categories.map(({ name, missions: list }) => (
-              <div key={name} className="mb-4">
-                {name && (
-                  <h3 className="mb-1.5 px-1 text-xs font-semibold" style={{ color: "var(--text-secondary)" }}>
-                    {name}
-                  </h3>
-                )}
-                <div className="card divide-y" style={{ borderColor: "var(--gridline)" }}>
-                  {list.map((mission) => {
-                    const done = doneIds.has(mission.id);
-                    return (
-                      <form
-                        key={mission.id}
-                        action={toggleMissionAction.bind(null, mission.id)}
-                        className="flex items-center justify-between gap-3 px-4 py-3"
-                      >
-                        <div>
-                          <p
-                            className="text-sm font-medium"
-                            style={{ color: done ? "var(--text-muted)" : "var(--text-primary)", textDecoration: done ? "line-through" : "none" }}
-                          >
-                            {mission.title}
-                          </p>
-                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                            {mission.points}점{mission.difficulty === "HARD" && " · 어려움"}
-                          </p>
-                        </div>
-                        <button
-                          type="submit"
-                          disabled={deadlinePassed}
-                          className="shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition disabled:opacity-50"
-                          style={
-                            done
-                              ? { background: "var(--gridline)", color: "var(--text-secondary)" }
-                              : { background: "var(--series-1)", color: "#fff" }
-                          }
-                        >
-                          {deadlinePassed ? (done ? "완료" : "마감됨") : done ? "완료 취소" : "완료 체크"}
-                        </button>
-                      </form>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-        ))}
-        {sections.length === 0 && (
-          <p className="card mb-6 px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-            아직 등록된 미션이 없습니다.
-          </p>
-        )}
+        <div className="mb-6 grid grid-cols-2 gap-3">
+          {partStats.map(({ part, total, done }) => (
+            <PartCard
+              key={part}
+              part={part}
+              label={PART_LABEL[part]}
+              emoji={PART_EMOJI[part]}
+              done={done}
+              total={total}
+              mine={part === member.part}
+            />
+          ))}
+        </div>
 
         {settings.showZoneScores && myZoneStats && (
           <div className="mb-5">

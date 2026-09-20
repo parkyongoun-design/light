@@ -1,12 +1,15 @@
 import { prisma } from "./db";
 import { getSettings } from "./tickets";
 
-export async function getOrgStats() {
+export async function getOrgStats(opts: { zoneId?: string } = {}) {
+  const { zoneId } = opts;
   const [teams, missions, settings, pullCounts] = await Promise.all([
     prisma.team.findMany({
+      where: zoneId ? { zones: { some: { id: zoneId } } } : undefined,
       orderBy: { order: "asc" },
       include: {
         zones: {
+          where: zoneId ? { id: zoneId } : undefined,
           orderBy: { order: "asc" },
           include: {
             members: {
@@ -20,7 +23,7 @@ export async function getOrgStats() {
     }),
     prisma.mission.findMany({ where: { active: true }, select: { part: true } }),
     getSettings(),
-    prisma.gachaPull.groupBy({ by: ["zoneId"], _count: { _all: true }, where: { zoneId: { not: null } } }),
+    prisma.gachaPull.groupBy({ by: ["zoneId"], _count: { _all: true }, where: zoneId ? { zoneId } : { zoneId: { not: null } } }),
   ]);
 
   const { pointsPerTicket, showHolidayMissions } = settings;
@@ -34,7 +37,7 @@ export async function getOrgStats() {
     const visibleIds = (mission: { part: string; active: boolean }) =>
       mission.active && (mission.part === m.part || (showHolidayMissions && mission.part === "HOLIDAY"));
     const relevant = m.completions.filter((c) => visibleIds(c.mission));
-    const totalPoints = relevant.reduce((sum, c) => sum + c.mission.points, 0);
+    const totalPoints = m.completions.filter((c) => c.mission.active).reduce((sum, c) => sum + c.mission.points, 0);
     const available = (missionsByPart.get(m.part) ?? 0) + holidayCount;
     return { totalPoints, missionsDone: relevant.length, missionsAvailable: available };
   };

@@ -1,33 +1,26 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireMember } from "@/lib/auth";
 import { getSettings } from "@/lib/tickets";
 
-export async function toggleMissionAction(missionId: string) {
+export async function setMissionDoneAction(missionId: string, done: boolean): Promise<{ ok: boolean }> {
   const member = await requireMember();
 
   if (member.role !== "ADMIN") {
-    const settings = await getSettings();
-    if (settings.missionDeadline && new Date() > settings.missionDeadline) return;
-
-    const mission = await prisma.mission.findUnique({ where: { id: missionId } });
-    const allowed =
-      mission?.active && (mission.part === member.part || (settings.showHolidayMissions && mission.part === "HOLIDAY"));
-    if (!allowed) return;
+    const [settings, mission] = await Promise.all([
+      getSettings(),
+      prisma.mission.findUnique({ where: { id: missionId }, select: { active: true, part: true } }),
+    ]);
+    if (settings.missionDeadline && new Date() > settings.missionDeadline) return { ok: false };
+    const allowed = mission?.active && (mission.part !== "HOLIDAY" || settings.showHolidayMissions);
+    if (!allowed) return { ok: false };
   }
 
-  const existing = await prisma.missionCompletion.findUnique({
-    where: { memberId_missionId: { memberId: member.id, missionId } },
-  });
-
-  if (existing) {
-    await prisma.missionCompletion.delete({ where: { id: existing.id } });
+  if (done) {
+    await prisma.missionCompletion.createMany({ data: [{ memberId: member.id, missionId }], skipDuplicates: true });
   } else {
-    await prisma.missionCompletion.create({ data: { memberId: member.id, missionId } });
+    await prisma.missionCompletion.deleteMany({ where: { memberId: member.id, missionId } });
   }
-
-  revalidatePath("/zone");
-  revalidatePath("/gacha");
+  return { ok: true };
 }

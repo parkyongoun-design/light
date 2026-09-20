@@ -51,6 +51,7 @@ export default function GachaMachine({
   const [modalOpen, setModalOpen] = useState(false);
   const [shaking, setShaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [boxImgOk, setBoxImgOk] = useState(true);
 
   useEffect(() => {
     if (state.result) {
@@ -72,8 +73,16 @@ export default function GachaMachine({
         {unlimited ? "무제한" : `${ticketsAvailable}장`}
       </p>
 
-      <div className={`mx-auto mb-4 flex h-28 w-28 items-center justify-center rounded-2xl text-5xl ${shaking ? "animate-gacha-shake" : ""}`} style={{ background: "var(--page-plane)" }}>
-        🎁
+      <div
+        className={`mx-auto mb-4 flex h-44 w-44 items-center justify-center overflow-hidden rounded-2xl text-5xl ${shaking ? "animate-gacha-shake" : ""}`}
+        style={{ background: boxImgOk ? "transparent" : "var(--page-plane)" }}
+      >
+        {boxImgOk ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/gacha/gacha-box.png" alt="가챠 상자" className="h-full w-full object-contain" onError={() => setBoxImgOk(false)} />
+        ) : (
+          "🎁"
+        )}
       </div>
 
       <form action={formAction}>

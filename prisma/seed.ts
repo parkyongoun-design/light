@@ -88,7 +88,10 @@ const GACHA_ITEMS = [
   { name: "최근 가장 웃겼던 일", rarity: "COMMON", weight: 25, emoji: "😂", description: "이번 주 가장 웃겼던 순간을 나눠보세요." },
   { name: "인생 영화·드라마 추천 릴레이", rarity: "RARE", weight: 10, emoji: "🎬", description: "한 명씩 인생작을 추천하고 이유를 말해요." },
   { name: "MBTI 궁합 토크", rarity: "RARE", weight: 8, emoji: "🧩", description: "서로의 MBTI를 맞춰보고 잘 맞는 점을 찾아보세요." },
-  { name: "함께 하는 심리테스트", rarity: "EPIC", weight: 5, emoji: "🔮", description: "링크의 심리테스트를 다 같이 해보고 결과를 공유해요." },
+  { name: "인간관계 난이도 테스트", rarity: "RARE", weight: 8, emoji: "🧗", description: "나의 인간관계 난이도는 몇 점일까요? 결과를 구역원과 비교해 보세요.", linkUrl: "https://test-it.co.kr/test414.html" },
+  { name: "안정형 테스트", rarity: "RARE", weight: 8, emoji: "🤝", description: "나는 어떤 애착 유형일까요? 각자 해보고 결과를 나눠보세요.", linkUrl: "https://testmoa.com/test/secure-attachment-test" },
+  { name: "나의 페르소나 검사", rarity: "RARE", weight: 8, emoji: "🎭", description: "겉으로 보이는 나와 진짜 나, 다 같이 검사해 보세요.", linkUrl: "https://www.kkti.co.kr/" },
+  { name: "태국 검사", rarity: "RARE", weight: 8, emoji: "🇹🇭", description: "태국식 검사로 알아보는 나! 결과를 함께 이야기해 보세요.", linkUrl: "https://horasat.sowonary.com/birth" },
   { name: "10년 뒤 내 모습 토크", rarity: "EPIC", weight: 4, emoji: "🚀", description: "10년 뒤 어떤 모습이고 싶은지 이야기해요." },
   { name: "인생 명장면 한 가지씩", rarity: "LEGENDARY", weight: 2, emoji: "🌟", description: "지금까지 인생에서 가장 빛났던 순간을 나눠보세요." },
 ];

@@ -36,7 +36,8 @@ model Member {
   pinHash      String
   role         String   @default("MEMBER") // "ADMIN" | "MEMBER"
   isZoneLeader Boolean  @default(false)
-  part         String   @default("WORKER") // "WORKER" | "STUDENT" | "JOBSEEKER"
+  title        String   @default("") // free-text org title, e.g. 임원/팀장/조장/부교관 (independent of isZoneLeader)
+  part         String   @default("WORKER") // "WORKER" | "STUDENT" | "JOBSEEKER" (vestigial: members can freely do any part's missions)
   zone         Zone?    @relation(fields: [zoneId], references: [id], onDelete: SetNull)
   zoneId       String?
   active       Boolean  @default(true)

@@ -30,8 +30,8 @@ export default async function ZonePage() {
     const list = missions.filter((m) => m.part === part);
     return { part, total: list.length, done: list.filter((m) => doneIds.has(m.id)).length };
   });
-  const myMissions = missions.filter((m) => m.part === member.part || (settings.showHolidayMissions && m.part === "HOLIDAY"));
-  const myDone = myMissions.filter((m) => doneIds.has(m.id)).length;
+  const myVisibleMissions = missions.filter((m) => m.part !== "HOLIDAY" || settings.showHolidayMissions);
+  const myDone = myVisibleMissions.filter((m) => doneIds.has(m.id)).length;
 
   const allZones = orgStats?.teamRows.flatMap((t) => t.zones.map((z) => ({ team: t.team, zone: z }))) ?? [];
   const myZoneStats = allZones.find((e) => e.zone.zone.id === member.zoneId) ?? null;
@@ -48,8 +48,8 @@ export default async function ZonePage() {
       <main className="mx-auto max-w-2xl px-4 py-6">
         {myZoneStats && (
           <p className="mb-4 px-1 text-xs" style={{ color: "var(--text-muted)" }}>
-            {myZoneStats.team.name} · {myZoneStats.zone.zone.name} · {PART_LABEL[member.part]}
-            {member.isZoneLeader && " · 조장"}
+            {myZoneStats.team.name} · {myZoneStats.zone.zone.name}
+            {(member.title || member.isZoneLeader) && ` · ${member.title || "조장"}`}
           </p>
         )}
 
@@ -87,7 +87,7 @@ export default async function ZonePage() {
               <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: "var(--series-1)" }} />
             </div>
             <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-              내 미션 {myDone}/{myMissions.length}개 완료 · 뽑기는 조장이 대표로 해요
+              내 미션 {myDone}/{myVisibleMissions.length}개 완료 · 뽑기는 조장이 대표로 해요
             </p>
           </div>
         )}
@@ -101,7 +101,6 @@ export default async function ZonePage() {
               emoji={PART_EMOJI[part]}
               done={done}
               total={total}
-              mine={part === member.part}
             />
           ))}
         </div>
@@ -116,7 +115,7 @@ export default async function ZonePage() {
                 <thead>
                   <tr style={{ color: "var(--text-muted)", borderBottom: "1px solid var(--gridline)" }}>
                     <th className="px-4 py-2 font-medium">이름</th>
-                    <th className="px-2 py-2 font-medium">파트</th>
+                    <th className="px-2 py-2 font-medium">직책</th>
                     <th className="px-2 py-2 font-medium">완료</th>
                     <th className="px-4 py-2 font-medium">점수</th>
                   </tr>
@@ -140,7 +139,7 @@ export default async function ZonePage() {
                           )}
                         </td>
                         <td className="px-2 py-2" style={{ color: "var(--text-secondary)" }}>
-                          {PART_LABEL[m.part]}
+                          {m.title || "-"}
                         </td>
                         <td className="tabular px-2 py-2">
                           {stat.missionsDone}/{stat.missionsAvailable}

@@ -29,17 +29,18 @@ export async function getOrgStats(opts: { zoneId?: string } = {}) {
   const { pointsPerTicket, showHolidayMissions } = settings;
   const missionsByPart = new Map<string, number>();
   for (const m of missions) missionsByPart.set(m.part, (missionsByPart.get(m.part) ?? 0) + 1);
-  const holidayCount = showHolidayMissions ? missionsByPart.get("HOLIDAY") ?? 0 : 0;
   const pullsByZone = new Map(pullCounts.map((p) => [p.zoneId as string, p._count._all]));
 
   type MemberRow = (typeof teams)[number]["zones"][number]["members"][number];
+  // Members can freely do missions from any part, so completion is counted across all active missions.
+  const totalAvailable = [...missionsByPart.entries()].reduce(
+    (sum, [part, count]) => sum + (part === "HOLIDAY" ? (showHolidayMissions ? count : 0) : count),
+    0
+  );
   const memberStat = (m: MemberRow) => {
-    const visibleIds = (mission: { part: string; active: boolean }) =>
-      mission.active && (mission.part === m.part || (showHolidayMissions && mission.part === "HOLIDAY"));
-    const relevant = m.completions.filter((c) => visibleIds(c.mission));
-    const totalPoints = m.completions.filter((c) => c.mission.active).reduce((sum, c) => sum + c.mission.points, 0);
-    const available = (missionsByPart.get(m.part) ?? 0) + holidayCount;
-    return { totalPoints, missionsDone: relevant.length, missionsAvailable: available };
+    const relevant = m.completions.filter((c) => c.mission.active && (c.mission.part !== "HOLIDAY" || showHolidayMissions));
+    const totalPoints = relevant.reduce((sum, c) => sum + c.mission.points, 0);
+    return { totalPoints, missionsDone: relevant.length, missionsAvailable: totalAvailable };
   };
 
   const zoneRows = teams.flatMap((team) =>

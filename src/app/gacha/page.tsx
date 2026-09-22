@@ -43,7 +43,7 @@ export default async function GachaPage() {
         )}
         {!isAdmin && (
           <p className="mb-3 rounded-lg px-3 py-2 text-center text-xs font-medium" style={{ background: "var(--page-plane)", color: "var(--text-secondary)" }}>
-            구역 전체가 함께 모은 뽑기권이에요. 뽑기는 구역장이 대표로 해요.
+            조 전체가 함께 모은 뽑기권이에요. 뽑기는 조장이 대표로 해요.
           </p>
         )}
         <GachaMachine
@@ -54,13 +54,13 @@ export default async function GachaPage() {
         />
         {summary && (
           <p className="mt-2 text-center text-xs" style={{ color: "var(--text-muted)" }}>
-            구역 점수 {summary.totalPoints}점 · 다음 뽑기권까지 {summary.pointsPerTicket - summary.pointsIntoNextTicket}점
+            조 점수 {summary.totalPoints}점 · 다음 뽑기권까지 {summary.pointsPerTicket - summary.pointsIntoNextTicket}점
           </p>
         )}
 
         <div className="mt-8">
           <h2 className="mb-2 px-1 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            {isAdmin ? "내 컬렉션" : "우리 구역 컬렉션"}
+            {isAdmin ? "내 컬렉션" : "우리 조 컬렉션"}
           </h2>
           {collectionCounts.size === 0 ? (
             <p className="card px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>

@@ -67,7 +67,7 @@ export default function LoginForm({ teams, admins }: { teams: Team[]; admins: Me
       {teamId && teamId !== ADMIN_TEAM_VALUE && (
         <div>
           <label className="mb-1 block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
-            구역
+            조
           </label>
           <select
             value={zoneId}
@@ -78,7 +78,7 @@ export default function LoginForm({ teams, admins }: { teams: Team[]; admins: Me
             className="w-full rounded-lg border px-3 py-2 text-sm outline-none"
             style={selectStyle}
           >
-            <option value="">구역을 선택하세요</option>
+            <option value="">조를 선택하세요</option>
             {selectedTeam?.zones.map((z) => (
               <option key={z.id} value={z.id}>
                 {z.name}

@@ -46,7 +46,7 @@ export default async function AdminMissionsPage() {
               미션 마감 기한
             </p>
             <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              이 시각이 지나면 구역원들이 더 이상 미션을 체크할 수 없습니다. 비워두면 마감 없이 계속 진행됩니다.
+              이 시각이 지나면 조원들이 더 이상 미션을 체크할 수 없습니다. 비워두면 마감 없이 계속 진행됩니다.
             </p>
           </div>
           <div className="flex gap-2">

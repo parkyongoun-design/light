@@ -67,7 +67,7 @@ export default function GachaMachine({
   return (
     <div className="card p-5 text-center">
       <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-        {unlimited ? "보유 뽑기권" : "우리 구역 뽑기권"}
+        {unlimited ? "보유 뽑기권" : "우리 조 뽑기권"}
       </p>
       <p className="mb-4 text-4xl font-bold tabular" style={{ color: "var(--text-primary)" }}>
         {unlimited ? "무제한" : `${ticketsAvailable}장`}
@@ -86,7 +86,7 @@ export default function GachaMachine({
       </div>
 
       <form action={formAction}>
-        <PullButton disabled={!canPull || (!unlimited && ticketsAvailable < 1)} label={canPull ? undefined : "구역장만 뽑을 수 있어요"} />
+        <PullButton disabled={!canPull || (!unlimited && ticketsAvailable < 1)} label={canPull ? undefined : "조장만 뽑을 수 있어요"} />
       </form>
 
       {state.error && (

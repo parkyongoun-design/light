@@ -49,7 +49,7 @@ export default async function ZonePage() {
         {myZoneStats && (
           <p className="mb-4 px-1 text-xs" style={{ color: "var(--text-muted)" }}>
             {myZoneStats.team.name} · {myZoneStats.zone.zone.name} · {PART_LABEL[member.part]}
-            {member.isZoneLeader && " · 구역장"}
+            {member.isZoneLeader && " · 조장"}
           </p>
         )}
 
@@ -71,15 +71,15 @@ export default async function ZonePage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  우리 구역 뽑기권
+                  우리 조 뽑기권
                 </p>
                 <p className="text-3xl font-bold tabular" style={{ color: "var(--text-primary)" }}>
                   {summary.ticketsAvailable}장
                 </p>
               </div>
               <div className="text-right text-xs" style={{ color: "var(--text-muted)" }}>
-                <p>구역 점수 {summary.totalPoints}점</p>
-                <p>구역 참석률 {Math.round(myZoneStats.zone.completionRate * 100)}%</p>
+                <p>조 점수 {summary.totalPoints}점</p>
+                <p>조 참석률 {Math.round(myZoneStats.zone.completionRate * 100)}%</p>
                 <p>다음 뽑기권까지 {summary.pointsPerTicket - summary.pointsIntoNextTicket}점</p>
               </div>
             </div>
@@ -87,7 +87,7 @@ export default async function ZonePage() {
               <div className="h-full rounded-full" style={{ width: `${progressPct}%`, background: "var(--series-1)" }} />
             </div>
             <p className="mt-3 text-xs" style={{ color: "var(--text-muted)" }}>
-              내 미션 {myDone}/{myMissions.length}개 완료 · 뽑기는 구역장이 대표로 해요
+              내 미션 {myDone}/{myMissions.length}개 완료 · 뽑기는 조장이 대표로 해요
             </p>
           </div>
         )}
@@ -109,7 +109,7 @@ export default async function ZonePage() {
         {settings.showZoneScores && myZoneStats && (
           <div className="mb-5">
             <h2 className="mb-2 px-1 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              {myZoneStats.zone.zone.name} 구역원별 점수
+              {myZoneStats.zone.zone.name} 조원별 점수
             </h2>
             <div className="card overflow-hidden">
               <table className="w-full text-left text-xs">
@@ -130,7 +130,7 @@ export default async function ZonePage() {
                           {m.name}
                           {m.isZoneLeader && (
                             <span className="ml-1 rounded px-1 py-0.5 text-[10px]" style={{ background: "var(--gridline)", color: "var(--text-secondary)" }}>
-                              구역장
+                              조장
                             </span>
                           )}
                           {m.id === member.id && (
@@ -158,10 +158,10 @@ export default async function ZonePage() {
           <div className="mb-5">
             <div className="mb-2 flex items-center justify-between px-1">
               <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-                전체 구역 순위
+                전체 조 순위
               </h2>
               <span className="text-xs font-semibold" style={{ color: "var(--series-1)" }}>
-                우리 구역 {myRank.rank}위 / {ranked.length}구역
+                우리 조 {myRank.rank}위 / {ranked.length}조
               </span>
             </div>
             <div className="card divide-y" style={{ borderColor: "var(--gridline)" }}>
@@ -185,7 +185,7 @@ export default async function ZonePage() {
                             {r.entry.zone.zone.name}
                             {r.isMine && (
                               <span className="ml-1 text-xs" style={{ color: "var(--series-1)" }}>
-                                (우리 구역)
+                                (우리 조)
                               </span>
                             )}
                           </p>

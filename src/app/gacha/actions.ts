@@ -25,11 +25,11 @@ export async function pullGachaAction(_prev: PullState | undefined): Promise<Pul
 
   if (!isAdmin) {
     if (!member.isZoneLeader || !member.zoneId) {
-      return { error: "뽑기는 구역장만 할 수 있어요. 구역장에게 부탁해보세요!" };
+      return { error: "뽑기는 조장만 할 수 있어요. 조장에게 부탁해보세요!" };
     }
     const summary = await getZoneTicketSummary(member.zoneId);
     if (summary.ticketsAvailable < 1) {
-      return { error: "구역 뽑기권이 없습니다. 구역 점수를 더 모아주세요!" };
+      return { error: "조 뽑기권이 없습니다. 조 점수를 더 모아주세요!" };
     }
   }
 

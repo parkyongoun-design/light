@@ -41,7 +41,7 @@ export default async function AdminOrgPage() {
           조직 관리
         </h1>
         <p className="mb-4 text-xs" style={{ color: "var(--text-muted)" }}>
-          팀 → 구역 → 구역원 순으로 등록하세요. 신규 구역원 기본 PIN은 1234입니다.
+          팀 → 조 → 조원 순으로 등록하세요. 신규 조원 기본 PIN은 1234입니다.
         </p>
 
         <form action={createTeamAction} className="card mb-6 flex gap-2 p-4">
@@ -59,7 +59,7 @@ export default async function AdminOrgPage() {
                   {team.name}
                 </span>
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  {team.zones.length}개 구역 · {team.zones.reduce((s, z) => s + z.members.length, 0)}명
+                  {team.zones.length}개 조 · {team.zones.reduce((s, z) => s + z.members.length, 0)}명
                 </span>
               </summary>
 
@@ -79,9 +79,9 @@ export default async function AdminOrgPage() {
                 </div>
 
                 <form action={createZoneAction.bind(null, team.id)} className="flex gap-2">
-                  <input name="name" placeholder={`새 구역 이름 (예: ${team.name} 6구역)`} required className="flex-1 rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: "var(--baseline)" }} />
+                  <input name="name" placeholder={`새 조 이름 (예: ${team.name} 6조)`} required className="flex-1 rounded-lg border px-3 py-1.5 text-xs" style={{ borderColor: "var(--baseline)" }} />
                   <button type="submit" className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--series-3)" }}>
-                    구역 추가
+                    조 추가
                   </button>
                 </form>
 
@@ -106,7 +106,7 @@ export default async function AdminOrgPage() {
                         </form>
                         <form action={deleteZoneAction.bind(null, zone.id)}>
                           <button type="submit" className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--status-critical)", color: "var(--status-critical)" }}>
-                            구역 삭제
+                            조 삭제
                           </button>
                         </form>
                       </div>
@@ -124,7 +124,7 @@ export default async function AdminOrgPage() {
                                     </span>
                                     {m.isZoneLeader && (
                                       <span className="ml-1 rounded px-1 py-0.5 text-[10px]" style={{ background: "var(--gridline)", color: "var(--text-secondary)" }}>
-                                        구역장
+                                        조장
                                       </span>
                                     )}
                                     {!m.active && <span className="ml-1 text-[10px]" style={{ color: "var(--status-critical)" }}>비활성</span>}
@@ -148,7 +148,7 @@ export default async function AdminOrgPage() {
                                     <input name="newPin" placeholder="새 PIN (변경 시에만 입력)" className="rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--baseline)" }} />
                                     <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--text-secondary)" }}>
                                       <input type="checkbox" name="isZoneLeader" defaultChecked={m.isZoneLeader} />
-                                      구역장으로 지정
+                                      조장으로 지정
                                     </label>
                                     <div className="flex gap-2">
                                       <button type="submit" className="rounded-lg px-3 py-1 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
@@ -187,10 +187,10 @@ export default async function AdminOrgPage() {
                         <input name="pin" placeholder="PIN(기본 1234)" className="w-28 rounded-lg border px-2 py-1 text-xs" style={{ borderColor: "var(--baseline)" }} />
                         <label className="flex items-center gap-1 text-xs" style={{ color: "var(--text-secondary)" }}>
                           <input type="checkbox" name="isZoneLeader" />
-                          구역장
+                          조장
                         </label>
                         <button type="submit" className="rounded-lg px-3 py-1 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
-                          구역원 추가
+                          조원 추가
                         </button>
                       </form>
                     </div>

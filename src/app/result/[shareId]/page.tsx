@@ -22,7 +22,7 @@ async function getPull(shareId: string) {
 export async function generateMetadata({ params }: { params: { shareId: string } }): Promise<Metadata> {
   const pull = await getPull(params.shareId);
   if (!pull) return { title: "미션 가챠" };
-  const who = pull.zone?.name ?? "우리 구역";
+  const who = pull.zone?.name ?? "우리 조";
   const title = `${pull.item.emoji} ${who}의 뽑기 결과: ${pull.item.name}`;
   const description = pull.item.description || "미션 가챠에서 뽑은 대화거리예요!";
   return {
@@ -72,7 +72,7 @@ export default async function ResultPage({ params }: { params: { shareId: string
           </a>
         )}
         <p className="mt-4 text-xs" style={{ color: "var(--text-muted)" }}>
-          구역 전체가 함께 즐기는 대화거리 · {date}
+          조 전체가 함께 즐기는 대화거리 · {date}
         </p>
       </div>
     </main>

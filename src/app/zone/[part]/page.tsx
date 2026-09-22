@@ -32,7 +32,7 @@ export default async function PartMissionsPage({ params }: { params: { part: str
       <Nav name={member.name} role={member.role} active="zone" />
       <main className="mx-auto max-w-2xl px-4 py-6">
         <Link href="/zone" className="mb-3 inline-block text-xs font-medium" style={{ color: "var(--text-secondary)" }}>
-          ← 우리 구역으로
+          ← 우리 조으로
         </Link>
         <div className="mb-4 flex items-baseline justify-between px-1">
           <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>

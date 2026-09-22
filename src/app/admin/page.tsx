@@ -63,24 +63,24 @@ export default async function AdminOverviewPage() {
 
         <form action={updateDisplaySettingsAction} className="card mb-6 flex flex-col gap-3 p-4">
           <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            구역원 화면 표시 설정
+            조원 화면 표시 설정
           </p>
           <label className="flex items-start gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
             <input type="checkbox" name="showZoneScores" defaultChecked={settings.showZoneScores} className="mt-0.5" />
             <span>
-              <b>구역원별 점수표 공개</b> — 꺼두면 구역 총점·참석률만 보이고, 개인별 점수는 관리자만 봅니다.
+              <b>조원별 점수표 공개</b> — 꺼두면 조 총점·참석률만 보이고, 개인별 점수는 관리자만 봅니다.
             </span>
           </label>
           <label className="flex items-start gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
             <input type="checkbox" name="showZoneRanking" defaultChecked={settings.showZoneRanking} className="mt-0.5" />
             <span>
-              <b>전체 구역 순위 공개</b> — 30구역 순위를 보여줍니다. 낮은 순위 구역의 동기부여가 걱정되면 꺼두세요.
+              <b>전체 조 순위 공개</b> — 30조 순위를 보여줍니다. 낮은 순위 조의 동기부여가 걱정되면 꺼두세요.
             </span>
           </label>
           <label className="flex items-start gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
             <input type="checkbox" name="showHolidayMissions" defaultChecked={settings.showHolidayMissions} className="mt-0.5" />
             <span>
-              <b>명절 미션 공개</b> — 모든 구역원에게 명절 미션을 추가로 보여줍니다.
+              <b>명절 미션 공개</b> — 모든 조원에게 명절 미션을 추가로 보여줍니다.
             </span>
           </label>
           <button type="submit" className="self-start rounded-lg px-4 py-1.5 text-xs font-semibold text-white" style={{ background: "var(--series-1)" }}>
@@ -89,7 +89,7 @@ export default async function AdminOverviewPage() {
         </form>
 
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile label="총 인원" value={`${orgTotals.memberCount}명`} sub={`${orgTotals.teamCount}팀 · ${orgTotals.zoneCount}구역`} />
+          <StatTile label="총 인원" value={`${orgTotals.memberCount}명`} sub={`${orgTotals.teamCount}팀 · ${orgTotals.zoneCount}조`} />
           <StatTile label="누적 미션 완료" value={`${orgTotals.missionsDone}건`} sub={`미션 ${orgTotals.missionCount}종`} />
           <StatTile label="누적 점수" value={`${orgTotals.totalPoints.toLocaleString()}점`} />
           <StatTile label="사용된 뽑기권" value={`${orgTotals.ticketsUsed}장`} />
@@ -143,13 +143,13 @@ export default async function AdminOverviewPage() {
 
           <div className="card overflow-hidden">
             <h2 className="p-4 pb-0 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              구역별 참석률 (낮은 순)
+              조별 참석률 (낮은 순)
             </h2>
             <div className="max-h-96 overflow-y-auto">
               <table className="mt-3 w-full text-left text-sm">
                 <thead>
                   <tr style={{ color: "var(--text-muted)", borderBottom: "1px solid var(--gridline)" }}>
-                    <th className="px-4 py-2 font-medium">구역</th>
+                    <th className="px-4 py-2 font-medium">조</th>
                     <th className="px-2 py-2 font-medium">인원</th>
                     <th className="px-4 py-2 font-medium">참석률</th>
                   </tr>
@@ -179,7 +179,7 @@ export default async function AdminOverviewPage() {
         </div>
 
         <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-          팀 · 구역 · 구역원 상세
+          팀 · 조 · 조원 상세
         </h2>
         <div className="card divide-y" style={{ borderColor: "var(--gridline)" }}>
           {teamRows.map((t) => (
@@ -219,7 +219,7 @@ export default async function AdminOverviewPage() {
                               {m.name}
                               {m.isZoneLeader && (
                                 <span className="ml-1 rounded px-1 py-0.5 text-[10px]" style={{ background: "var(--gridline)", color: "var(--text-secondary)" }}>
-                                  구역장
+                                  조장
                                 </span>
                               )}
                             </td>

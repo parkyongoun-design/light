@@ -9,7 +9,7 @@ type Props = {
 
 export default function Nav({ name, role, active }: Props) {
   const memberLinks = [
-    { href: "/zone", key: "zone", label: "우리 구역" },
+    { href: "/zone", key: "zone", label: "우리 조" },
     { href: "/gacha", key: "gacha", label: "가챠" },
   ];
   const adminLinks = [
